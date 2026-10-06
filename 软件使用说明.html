@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 语言学习助手 · 使用说明书</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+            background: #f5f7fa;
+            color: #2c3e50;
+            line-height: 1.7;
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: #1e2a3a;
+            color: #cdd8e6;
+            flex-shrink: 0;
+            height: 100vh;
+            position: sticky;
+            top: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            transition: width 0.3s ease, transform 0.3s ease;
+            z-index: 100;
+            scrollbar-width: thin;
+            scrollbar-color: #3a4a60 transparent;
+        }
+
+        .sidebar::-webkit-scrollbar { width: 6px; }
+        .sidebar::-webkit-scrollbar-thumb { background: #3a4a60; border-radius: 3px; }
+        .sidebar::-webkit-scrollbar-track { background: transparent; }
+
+        .sidebar.collapsed {
+            width: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 22px 22px 16px 22px;
+            border-bottom: 1px solid #2c3e50;
+            position: sticky;
+            top: 0;
+            background: #1e2a3a;
+            z-index: 2;
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.05rem;
+            color: #ffffff;
+            font-weight: 600;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar-header .sub {
+            font-size: 0.75rem;
+            color: #7a8ea8;
+            margin-top: 4px;
+            font-weight: 300;
+        }
+
+        .nav-list {
+            list-style: none;
+            padding: 12px 0 30px 0;
+        }
+
+        .nav-list a {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            padding: 9px 22px;
+            color: #b8c6d9;
+            text-decoration: none;
+            font-size: 0.9rem;
+            border-left: 3px solid transparent;
+            transition: all 0.2s ease;
+            line-height: 1.4;
+        }
+
+        .nav-list a:hover,
+        .nav-list a.active {
+            background: #263449;
+            color: #ffffff;
+            border-left-color: #4a8fe7;
+        }
+
+        .nav-list a.active { font-weight: 500; }
+
+        .nav-list .num {
+            font-size: 0.75rem;
+            color: #5a7a9e;
+            flex-shrink: 0;
+            min-width: 18px;
+            font-weight: 600;
+        }
+
+        .nav-list a:hover .num,
+        .nav-list a.active .num { color: #7aabef; }
+
+        .toggle-btn {
+            position: fixed;
+            left: 280px;
+            top: 18px;
+            width: 36px;
+            height: 36px;
+            background: #1e2a3a;
+            color: #cdd8e6;
+            border: none;
+            border-radius: 0 8px 8px 0;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: left 0.3s ease, background 0.2s;
+            z-index: 101;
+            box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .toggle-btn:hover { background: #2a3a52; color: #ffffff; }
+        .sidebar.collapsed ~ .toggle-btn { left: 0; }
+
+        .main {
+            flex: 1;
+            min-width: 0;
+            padding: 0 0 50px 0;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #ffffff;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 50px 40px 40px 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.4rem;
+            letter-spacing: 2px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.85;
+            font-weight: 300;
+        }
+
+        .header .meta {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .header .meta span {
+            background: rgba(255, 255, 255, 0.12);
+            padding: 5px 16px;
+            border-radius: 30px;
+            backdrop-filter: blur(4px);
+        }
+
+        .content { padding: 40px 45px 20px 45px; }
+
+        h2 {
+            font-size: 1.6rem;
+            color: #1e3c72;
+            margin: 45px 0 18px 0;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #e8edf5;
+            position: relative;
+            scroll-margin-top: 20px;
+        }
+
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background: #2a5298;
+            border-radius: 3px;
+        }
+
+        h2:first-of-type { margin-top: 0; }
+
+        h3 {
+            font-size: 1.2rem;
+            color: #2a5298;
+            margin: 30px 0 12px 0;
+            font-weight: 600;
+        }
+
+        h4 {
+            font-size: 1rem;
+            color: #34495e;
+            margin: 20px 0 8px 0;
+        }
+
+        p { margin: 12px 0; color: #3a4a5c; }
+
+        ul, ol { margin: 12px 0 12px 25px; color: #3a4a5c; }
+        li { margin: 6px 0; }
+
+        .highlight-box {
+            background: #f0f5ff;
+            border-left: 5px solid #2a5298;
+            padding: 18px 22px;
+            border-radius: 0 12px 12px 0;
+            margin: 20px 0;
+        }
+
+        .highlight-box p { margin: 6px 0; }
+
+        .tip-box {
+            background: #f0faf0;
+            border-left: 5px solid #2ecc71;
+            padding: 18px 22px;
+            border-radius: 0 12px 12px 0;
+            margin: 20px 0;
+        }
+
+        .warn-box {
+            background: #fef9e7;
+            border-left: 5px solid #f39c12;
+            padding: 18px 22px;
+            border-radius: 0 12px 12px 0;
+            margin: 20px 0;
+        }
+
+        .danger-box {
+            background: #fdecec;
+            border-left: 5px solid #e74c3c;
+            padding: 18px 22px;
+            border-radius: 0 12px 12px 0;
+            margin: 20px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.95rem;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        th {
+            background: #1e3c72;
+            color: white;
+            padding: 14px 16px;
+            text-align: left;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e8edf5;
+            background: white;
+            vertical-align: top;
+        }
+
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #f8faff; }
+
+        code {
+            font-family: "Consolas", "Monaco", "Courier New", monospace;
+            background: #f0f3f8;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            color: #c0392b;
+        }
+
+        pre {
+            background: #1e2a3a;
+            color: #e8edf5;
+            padding: 18px 22px;
+            border-radius: 12px;
+            overflow-x: auto;
+            margin: 16px 0;
+            font-family: "Consolas", "Monaco", monospace;
+            font-size: 0.88rem;
+            line-height: 1.6;
+        }
+
+        pre code {
+            background: transparent;
+            color: inherit;
+            padding: 0;
+            font-size: inherit;
+        }
+
+        .ui-mock {
+            background: #f8fafc;
+            border: 2px solid #dce4ed;
+            border-radius: 14px;
+            padding: 18px 20px;
+            margin: 20px 0;
+            font-family: "Consolas", "Monaco", monospace;
+            font-size: 0.85rem;
+            line-height: 1.8;
+            color: #2c3e50;
+            white-space: pre;
+            overflow-x: auto;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .feature-card {
+            background: #f8faff;
+            border: 1px solid #e0e8f5;
+            border-radius: 12px;
+            padding: 18px 20px;
+            transition: all 0.2s ease;
+        }
+
+        .feature-card:hover {
+            border-color: #2a5298;
+            box-shadow: 0 4px 16px rgba(42, 82, 152, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .feature-card .icon { font-size: 1.6rem; margin-bottom: 8px; }
+        .feature-card .name { font-weight: 600; color: #1e3c72; margin-bottom: 4px; }
+        .feature-card .desc { font-size: 0.88rem; color: #5a6b7e; }
+
+        .kbd {
+            display: inline-block;
+            background: #eef2f7;
+            border: 1px solid #ccd7e6;
+            border-bottom: 2px solid #b0c0d8;
+            border-radius: 6px;
+            padding: 2px 10px;
+            font-family: "Consolas", monospace;
+            font-size: 0.85rem;
+            color: #1e3c72;
+            margin: 0 2px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 40px 45px 10px 45px;
+            color: #8a9bb0;
+            font-size: 0.85rem;
+            border-top: 1px solid #e8edf5;
+            margin-top: 40px;
+        }
+
+        @media (max-width: 900px) {
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                transform: translateX(0);
+            }
+            .sidebar.collapsed {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+            .toggle-btn { left: 280px; }
+            .sidebar.collapsed ~ .toggle-btn { left: 0; }
+        }
+
+        @media (max-width: 700px) {
+            .content { padding: 25px 20px 10px 20px; }
+            .header { padding: 35px 20px 30px 20px; }
+            .header h1 { font-size: 1.6rem; }
+            h2 { font-size: 1.3rem; }
+            table { font-size: 0.82rem; }
+            th, td { padding: 10px 10px; }
+            .ui-mock { font-size: 0.72rem; padding: 12px; }
+            .feature-grid { grid-template-columns: 1fr; }
+        }
+
+        .back-to-top {
+            position: fixed;
+            right: 28px;
+            bottom: 28px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #1e3c72;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 14px rgba(30, 60, 114, 0.35);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 99;
+        }
+
+        .back-to-top.visible { opacity: 1; visibility: visible; }
+        .back-to-top:hover { background: #2a5298; transform: translateY(-3px); }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>📘 使用说明书</h2>
+                <div class="sub">AI 语言学习助手 v0.1.2</div>
+            </div>
+            <ul class="nav-list" id="navList">
+                <li><a href="#intro"><span class="num">01</span> 软件简介</a></li>
+                <li><a href="#install"><span class="num">02</span> 安装与启动</a></li>
+                <li><a href="#ui"><span class="num">03</span> 界面说明</a></li>
+                <li><a href="#settings"><span class="num">04</span> 配置设置</a></li>
+                <li><a href="#prompts"><span class="num">05</span> 提示词与规则勾选</a></li>
+                <li><a href="#history"><span class="num">06</span> 上下文与历史机制</a></li>
+                <li><a href="#usage"><span class="num">07</span> 使用流程</a></li>
+                <li><a href="#shortcuts"><span class="num">08</span> 快捷键</a></li>
+                <li><a href="#config"><span class="num">09</span> 配置文件说明</a></li>
+                <li><a href="#log"><span class="num">10</span> 发送日志</a></li>
+                <li><a href="#faq"><span class="num">11</span> 常见问题</a></li>
+                <li><a href="#notes"><span class="num">12</span> 注意事项</a></li>
+                <li><a href="#feedback"><span class="num">13</span> 版本与反馈</a></li>
+            </ul>
+        </aside>
+
+        <button class="toggle-btn" id="toggleBtn" title="展开/收起目录">◀</button>
+
+        <main class="main">
+            <div class="container">
+                <div class="header">
+                    <h1>AI 语言学习助手</h1>
+                    <div class="subtitle">软件使用说明书</div>
+                    <div class="meta">
+                        <span>版本 0.1.2</span>
+                        <span>Windows / macOS / Linux</span>
+                        <span>Python 3.8+</span>
+                    </div>
+                </div>
+
+                <div class="content">
+                    <!-- 一、软件简介 -->
+                    <h2 id="intro">一、软件简介</h2>
+                    <p><strong>AI 语言学习助手</strong>是一款基于大语言模型的桌面学习工具，专为语言学习者设计。通过调用兼容 OpenAI 接口的 API（如 DeepSeek），可帮助您完成<strong>翻译、音标查询、词义解释、例句生成、格式化的语言分析</strong>等语言学习任务。</p>
+
+                    <h3>软件特点</h3>
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <div class="icon">🖥️</div>
+                            <div class="name">轻量桌面程序</div>
+                            <div class="desc">界面简洁，启动快速，资源占用低</div>
+                        </div>
+                        <div class="feature-card">
+                            <div class="icon">🔗</div>
+                            <div class="name">兼容 OpenAI 协议</div>
+                            <div class="desc">支持任意兼容 OpenAI 接口的 API 服务</div>
+                        </div>
+                        <div class="feature-card">
+                            <div class="icon">💬</div>
+                            <div class="name">流式输出</div>
+                            <div class="desc">AI 回答实时逐字显示，体验流畅</div>
+                        </div>
+                        <div class="feature-card">
+                            <div class="icon">📌</div>
+                            <div class="name">窗口置顶</div>
+                            <div class="desc">可置顶窗口，方便对照学习</div>
+                        </div>
+                        <div class="feature-card">
+                            <div class="icon">⭐</div>
+                            <div class="name">提示词 + 规则勾选</div>
+                            <div class="desc">勾选规则后，每轮自动附加，格式更稳定</div>
+                        </div>
+                        <div class="feature-card">
+                            <div class="icon">⚡</div>
+                            <div class="name">纯发送</div>
+                            <div class="desc">一键发送不带规则的追问，保持勾选不变</div>
+                        </div>
+                        <div class="feature-card">
+                            <div class="icon">🧠</div>
+                            <div class="name">上下文可调</div>
+                            <div class="desc">自由调节历史轮数，独立句子建议设 0</div>
+                        </div>
+                        <div class="feature-card">
+                            <div class="icon">💾</div>
+                            <div class="name">自动保存</div>
+                            <div class="desc">配置、窗口位置、提示词自动持久化</div>
+                        </div>
+                        <div class="feature-card">
+                            <div class="icon">📝</div>
+                            <div class="name">发送日志</div>
+                            <div class="desc">记录每轮实际发送内容，便于排查</div>
+                        </div>
+                    </div>
+
+                    <!-- 二、安装与启动 -->
+                    <h2 id="install">二、安装与启动</h2>
+
+                    <h3>2.1 环境要求</h3>
+                    <ul>
+                        <li>Python 3.8 或更高版本</li>
+                        <li>依赖库：<code>openai</code>、<code>tkinter</code>（Python 自带）</li>
+                    </ul>
+
+                    <h3>2.2 安装依赖</h3>
+                    <pre><code>pip install openai</code></pre>
+                    <div class="tip-box">
+                        <p>💡 若使用打包后的可执行文件（.exe），可跳过此步骤。</p>
+                    </div>
+
+                    <h3>2.3 启动程序</h3>
+                    <p><strong>方式一：源码运行</strong></p>
+                    <pre><code>python WINAPI.py</code></pre>
+                    <p><strong>方式二：双击运行</strong></p>
+                    <p>若已通过 PyInstaller 打包，直接双击生成的 <code>.exe</code> 文件即可。</p>
+
+                    <h3>2.4 首次启动</h3>
+                    <p>首次运行时程序会自动创建以下文件（与程序同目录）：</p>
+                    <table>
+                        <thead>
+                            <tr><th>文件名</th><th>说明</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>config.json</code></td><td>保存 API 配置、窗口位置、置顶状态等</td></tr>
+                            <tr><td><code>prompts.json</code></td><td>保存提示词列表及勾选状态</td></tr>
+                            <tr><td><code>send_log.txt</code></td><td>发送日志，记录每轮实际发送内容（自动生成）</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="warn-box">
+                        <p>⚠️ 首次启动<strong>必须先配置 API Key</strong>，否则无法发送消息。</p>
+                    </div>
+
+                    <!-- 三、界面说明 -->
+                    <h2 id="ui">三、界面说明</h2>
+                    <p>程序主界面自上而下分为四个区域：</p>
+
+                    <div class="ui-mock">
+┌──────────────────────────────────────────────┐
+│  [提示词] [设置] [清空] [发送] [纯发送]  0/8 轮 │  ← 工具栏
+├──────────────────────────────────────────────┤
+│  ┌────────────────────────────────────────┐  │
+│  │  在此输入要翻译/查询的文本...           │  │  ← 输入框
+│  └────────────────────────────────────────┘  │
+├──────────────────────────────────────────────┤
+│  【你】                                       │
+│  请输入文本                                   │  ← 对话区
+│  [已附加 1 条规则]                            │
+│  【AI】                                       │
+│  回答内容...                                  │
+│                                               │
+├──────────────────────────────────────────────┤
+│  就绪                                         │  ← 状态栏
+└──────────────────────────────────────────────┘
+                    </div>
+
+                    <h3>3.1 工具栏按钮</h3>
+                    <table>
+                        <thead>
+                            <tr><th>按钮</th><th>功能</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>提示词</strong></td><td>打开提示词管理窗口，可勾选规则</td></tr>
+                            <tr><td><strong>设置</strong></td><td>打开配置窗口（API Key、模型、上下文轮数等）</td></tr>
+                            <tr><td><strong>清空</strong></td><td>清空当前对话历史与显示内容</td></tr>
+                            <tr><td><strong>发送</strong></td><td>发送输入框内容给 AI，<strong>自动附加</strong>勾选的规则</td></tr>
+                            <tr><td><strong>纯发送</strong></td><td>发送输入框内容给 AI，<strong>忽略</strong>勾选的规则，适合追问</td></tr>
+                        </tbody>
+                    </table>
+
+                    <h4>轮数标签含义</h4>
+                    <p>工具栏最右侧显示当前上下文轮数，例如 <code>3 / 8 轮</code>：</p>
+                    <ul>
+                        <li><strong>左边数字</strong>：<code>history</code> 里已攒的轮数。</li>
+                        <li><strong>右边数字</strong>：设置里的「上下文轮数」上限。</li>
+                        <li>超过上限后会显示如 <code>9 / 8</code>，但发送时<strong>始终只取最近 8 轮</strong>，更早的会被自动挤掉。</li>
+                        <li>点【清空】会把轮数重置为 0。</li>
+                    </ul>
+
+                    <h3>3.2 输入框</h3>
+                    <ul>
+                        <li>支持多行输入</li>
+                        <li>支持撤销（<span class="kbd">Ctrl+Z</span>）</li>
+                        <li>快捷键 <span class="kbd">Ctrl+Enter</span> 快速发送（带规则）</li>
+                        <li><strong>启用规则勾选后，输入框只需写“要处理的内容”</strong>，规则会自动附加</li>
+                    </ul>
+
+                    <h3>3.3 对话区</h3>
+                    <ul>
+                        <li><strong>【你】</strong>：蓝色加粗，显示您输入的原始内容</li>
+                        <li><strong>【AI】</strong>：黑色，显示 AI 的回复（流式逐字显示）</li>
+                        <li><strong>系统消息</strong>：灰色斜体，显示错误提示、规则附加提示等</li>
+                    </ul>
+
+                    <h3>3.4 状态栏</h3>
+                    <p>显示当前状态：<code>就绪</code> / <code>请求中...</code> / <code>完成</code> / <code>出错</code> 等。</p>
+
+                    <!-- 四、配置设置 -->
+                    <h2 id="settings">四、配置设置</h2>
+                    <p>点击工具栏 <strong>【设置】</strong> 按钮打开配置窗口。</p>
+
+                    <h3>4.1 配置项说明</h3>
+                    <table>
+                        <thead>
+                            <tr><th>配置项</th><th>说明</th><th>示例</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>API Key</strong></td><td>服务商提供的密钥（必填）</td><td><code>sk-xxxxxxxxxx</code></td></tr>
+                            <tr><td><strong>Base URL</strong></td><td>API 接口地址</td><td><code>https://api.deepseek.com/v1</code></td></tr>
+                            <tr><td><strong>模型</strong></td><td>使用的模型名称</td><td><code>deepseek-flash</code></td></tr>
+                            <tr><td><strong>置顶窗口</strong></td><td>勾选后窗口始终显示在最前</td><td>☑</td></tr>
+                            <tr><td><strong>关闭思考（快速模式）</strong></td><td>勾选后禁用思考过程，响应更快</td><td>☑</td></tr>
+                            <tr><td><strong>上下文轮数</strong></td><td>携带的历史对话轮数（非负整数）</td><td><code>0</code></td></tr>
+                        </tbody>
+                    </table>
+
+                    <h3>4.2 操作按钮</h3>
+                    <ul>
+                        <li><strong>测试连接</strong>：验证当前配置是否能正常调用 API，结果显示在窗口下方</li>
+                        <li><strong>保存</strong>：保存配置并立即生效</li>
+                        <li><strong>关闭</strong>：关闭设置窗口（未保存的修改将丢失）</li>
+                    </ul>
+
+                    <h3>4.3 上下文轮数详解</h3>
+                    <p><strong>含义：</strong>每次发送时，除本次内容外，还携带最近 N 轮历史对话。</p>
+                    <p><strong>计算：</strong>1 轮 = 1 次用户提问 + 1 次 AI 回复。</p>
+
+                    <div class="highlight-box">
+                        <p><strong>重要：规则勾选与上下文轮数的关系</strong></p>
+                        <p>勾选的规则<strong>不会</strong>存入历史。历史里只保存你输入的原始内容。</p>
+                        <p>每轮发送时，程序会把勾选的规则<strong>重新拼接到当前这条消息</strong>里，所以：</p>
+                        <ul>
+                            <li>规则每轮都在最新位置出现，优先级最高，不依赖历史记忆。</li>
+                            <li>即使上下文轮数设为 0，规则依然生效。</li>
+                            <li>历史只占用“原始对话”的空间，不会被规则重复占满。</li>
+                        </ul>
+                    </div>
+
+                    <div class="highlight-box">
+                        <p><strong>重要：轮数达到上限会怎样</strong></p>
+                        <ul>
+                            <li>工具栏显示如 <code>8 / 8 轮</code>，表示 history 里已攒了 8 轮。</li>
+                            <li>达到上限<strong>不会阻止发送</strong>，继续发送会显示 <code>9 / 8</code>、<code>10 / 8</code>。</li>
+                            <li>发送时始终只取最近 N 轮，旧的会自动被挤掉。</li>
+                            <li>显示超过上限只是提示，不影响功能。</li>
+                        </ul>
+                    </div>
+
+                    <p><strong>建议值：</strong></p>
+                    <table>
+                        <thead>
+                            <tr><th>轮数</th><th>适用场景</th><th>说明</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>0</code></td><td><strong>每轮独立句子、规则固定（推荐）</strong></td><td>不携带历史，每轮完全独立。省 token，格式最稳。</td></tr>
+                            <tr><td><code>1~2</code></td><td>偶尔追问上一句</td><td>仅保留极少量上下文。</td></tr>
+                            <tr><td><code>4~8</code></td><td>连续讨论、追问、指代</td><td>需要模型记住前面聊过什么时才用。</td></tr>
+                            <tr><td><code>&gt;16</code></td><td>不推荐</td><td>token 消耗大，响应慢，格式漂移风险高。</td></tr>
+                        </tbody>
+                    </table>
+
+                    <p><strong>限制：</strong>必须为<strong>非负整数</strong>（0 也允许），否则保存时会提示。</p>
+
+                    <div class="tip-box">
+                        <p>💡 <strong>如果你每轮都是“勾选规则 + 一句新句子”，建议把轮数设为 0。</strong></p>
+                        <p>此时历史对话对当前轮没有帮助，反而可能：</p>
+                        <ul>
+                            <li>浪费 token，增加费用</li>
+                            <li>把上一轮的错误格式带进来</li>
+                            <li>把上一句内容混进这一句</li>
+                        </ul>
+                        <p>设 0 后，每轮只发「规则 + 当前句子」，最干净、最省、最稳。</p>
+                    </div>
+
+                    <h3>4.4 常用 API 服务参考</h3>
+                    <table>
+                        <thead>
+                            <tr><th>服务商</th><th>Base URL</th><th>示例模型</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>DeepSeek</td><td><code>https://api.deepseek.com/v1</code></td><td><code>deepseek-chat</code>、<code>deepseek-flash</code></td></tr>
+                            <tr><td>OpenAI</td><td><code>https://api.openai.com/v1</code></td><td><code>gpt-4o-mini</code></td></tr>
+                            <tr><td>其他兼容服务</td><td>服务商提供</td><td>服务商提供</td></tr>
+                        </tbody>
+                    </table>
+
+                    <!-- 五、提示词与规则勾选 -->
+                    <h2 id="prompts">五、提示词与规则勾选</h2>
+                    <p>点击工具栏 <strong>【提示词】</strong> 按钮打开管理窗口。这是本软件的核心功能之一。</p>
+
+                    <h3>5.1 提示词的作用</h3>
+                    <ul>
+                        <li><strong>快捷填入</strong>：把高频提示语一键填进输入框。</li>
+                        <li><strong>规则勾选</strong>：勾选后，每次发送时自动把规则拼在句子前面，<strong>彻底解决多轮对话格式漂移问题</strong>。</li>
+                    </ul>
+
+                    <h3>5.2 窗口结构</h3>
+                    <div class="ui-mock">
+┌─────────────────────────────────────────┐
+│  ☑  提示词                              │  ← 复选框列 + 内容列
+│  ☐  请把下面的内容翻译成英语...          │
+│  ☑  请按以下格式输出日语注音...          │
+│  ☐  请解释下面这段话的语法结构...        │
+│                                          │
+├─────────────────────────────────────────┤
+│  [全屏]              [新增] [删除] [关闭] │
+└─────────────────────────────────────────┘
+                    </div>
+
+                    <h3>5.3 复选框勾选机制（重点）</h3>
+                    <p>提示词列表每行最左侧有一个复选框，用字符显示：</p>
+                    <ul>
+                        <li><code>☐</code>：未勾选，该条<strong>不会</strong>自动附加</li>
+                        <li><code>☑</code>：已勾选，每次发送时<strong>自动附加</strong>到当前消息前面</li>
+                    </ul>
+
+                    <h4>勾选方式</h4>
+                    <table>
+                        <thead>
+                            <tr><th>操作</th><th>效果</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>单击复选框列</strong></td><td>切换该行勾选状态，立即保存，并选中该行</td></tr>
+                            <tr><td><strong>选中多行后按空格</strong></td><td>批量切换所有选中行的勾选状态</td></tr>
+                            <tr><td><span class="kbd">Ctrl+A</span></td><td>全选所有行</td></tr>
+                            <tr><td><span class="kbd">Ctrl</span> / <span class="kbd">Shift</span> + 单击</td><td>多选行（不改变勾选）</td></tr>
+                        </tbody>
+                    </table>
+
+                    <h4>多项勾选规则</h4>
+                    <ul>
+                        <li><strong>允许多条同时勾选</strong>，默认不勾选任何规则。</li>
+                        <li>勾选多条时，发送时会按列表顺序<strong>依次拼接</strong>，每条之间空一行。</li>
+                        <li>勾选状态<strong>自动保存</strong>到 <code>prompts.json</code>，下次打开程序仍然记得。</li>
+                    </ul>
+
+                    <h4>发送时的拼接格式</h4>
+                    <p>假设你勾选了 2 条规则，输入框写了一句日文，实际发送内容为：</p>
+                    <pre><code>规则1正文
+
+规则2正文
+
+【要处理的内容】
+ジョージは寝かしつけるのが大好き</code></pre>
+                    <p>对话区只显示你输入的原始句子，并附一行灰色提示：<code>[已附加 2 条规则]</code>。</p>
+
+                    <div class="highlight-box">
+                        <p><strong>两种“不带规则发送”的方式</strong></p>
+                        <p><strong>方式一：取消勾选所有规则，点【发送】</strong></p>
+                        <ul>
+                            <li>适合整段时间都不需要规则。</li>
+                            <li>缺点：需要来回切换勾选状态。</li>
+                        </ul>
+                        <p><strong>方式二：保持勾选，点【纯发送】</strong></p>
+                        <ul>
+                            <li>适合平时带规则、偶尔追问时不想带规则。</li>
+                            <li>优点：不用改勾选状态，一键切换。</li>
+                            <li>纯发送时：
+                                <ul>
+                                    <li>不拼接规则</li>
+                                    <li>聊天区不显示 <code>[已附加 N 条规则]</code></li>
+                                    <li>日志里记录“附加规则数：0”</li>
+                                    <li>仍然走 history，仍然受上下文轮数影响</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="tip-box">
+                        <p>💡 <strong>纯聊天模式</strong>：不勾选任何规则时，发送行为跟普通聊天一样，只发输入框内容。</p>
+                    </div>
+
+                    <h3>5.4 其他操作</h3>
+                    <table>
+                        <thead>
+                            <tr><th>操作</th><th>方法</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>使用</strong></td><td>选中后右键 →「使用」，内容填入输入框（不改变勾选）</td></tr>
+                            <tr><td><strong>新增</strong></td><td>点击「新增」按钮，输入内容后保存</td></tr>
+                            <tr><td><strong>编辑</strong></td><td>选中后右键 →「编辑」，或双击内容列</td></tr>
+                            <tr><td><strong>删除</strong></td><td>选中后右键 →「删除」，或按 <span class="kbd">Delete</span> 键，支持多选批量删除</td></tr>
+                            <tr><td><strong>全屏</strong></td><td>点击「全屏」按钮切换最大化</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="warn-box">
+                        <p>⚠️ 双击复选框列<strong>不会</strong>进入编辑，只会切换勾选（或无效）。双击内容列才进入编辑。</p>
+                    </div>
+
+                    <h3>5.5 保存位置与数据结构</h3>
+                    <p>提示词保存在 <code>prompts.json</code> 文件中，新格式为对象数组：</p>
+                    <pre><code>[
+  {
+    "text": "请把下面的内容翻译成英语，并标注音标和词性：",
+    "checked": false
+  },
+  {
+    "text": "请按以下格式输出日语注音……",
+    "checked": true
+  }
+]</code></pre>
+                    <p>字段说明：</p>
+                    <table>
+                        <thead>
+                            <tr><th>字段</th><th>说明</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>text</code></td><td>提示词正文</td></tr>
+                            <tr><td><code>checked</code></td><td>是否勾选（true / false）</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="tip-box">
+                        <p>💡 旧版 <code>prompts.json</code> 是字符串数组，程序加载时会<strong>自动兼容并升级</strong>为新格式，无需手动修改。</p>
+                    </div>
+
+                    <!-- 六、上下文与历史机制 -->
+                    <h2 id="history">六、上下文与历史机制</h2>
+                    <p>这一章专门解释 <code>history</code> 到底存什么、有什么用、和规则勾选是什么关系。理解这一章，能帮你把「上下文轮数」设对。</p>
+
+                    <h3>6.1 history 里存什么</h3>
+                    <p>每轮 AI 回答完成后，程序会把两条消息成对存入 <code>history</code>：</p>
+                    <table>
+                        <thead>
+                            <tr><th>角色</th><th>内容</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>user</code></td><td>你在输入框里敲的<strong>原文</strong>，不带规则</td></tr>
+                            <tr><td><code>assistant</code></td><td>AI 这一轮的完整回答</td></tr>
+                        </tbody>
+                    </table>
+                    <p>所以一轮 = 1 条 user + 1 条 assistant。</p>
+
+                    <div class="highlight-box">
+                        <p><strong>关键：history 里不含勾选规则。</strong></p>
+                        <p>规则只拼在每次实际发送的<strong>当前消息</strong>里，不进入 history。</p>
+                        <p>原因：</p>
+                        <ul>
+                            <li>省 token，避免规则在历史里反复出现。</li>
+                            <li>避免历史里的旧规则稀释当前规则。</li>
+                            <li>让规则永远在最新位置，优先级最高。</li>
+                        </ul>
+                    </div>
+
+                    <h3>6.2 每轮实际发送的结构</h3>
+                    <p>假设勾选了 1 条规则，当前输入是 <code>ジョージは寝かしつけるのが大好き</code>，发送给 API 的 <code>messages</code> 结构是：</p>
+                    <pre><code>[system]  固定人设
+
+[历史 user 1]       ← 来自 history，原始输入，不带规则
+[历史 assistant 1]  ← 来自 history，AI 回答
+
+[历史 user 2]       ← 来自 history
+[历史 assistant 2]
+
+...
+
+[当前 user]         ← 规则 + 【要处理的内容】 + 当前输入</code></pre>
+                    <p>规则只出现在<strong>最后一条当前 user 消息</strong>里。</p>
+
+                    <h3>6.3 两种典型用法</h3>
+
+                    <h4>用法 A：每轮独立句子（推荐设轮数 0）</h4>
+                    <ul>
+                        <li>你每轮只发一句新句子，勾选固定规则。</li>
+                        <li>不需要模型记住上一句。</li>
+                        <li>此时 history 对当前轮<strong>没有帮助</strong>，反而：
+                            <ul>
+                                <li>浪费 token，增加费用</li>
+                                <li>可能把上一轮的错误格式带进来</li>
+                                <li>可能把上一句内容混进这一句</li>
+                            </ul>
+                        </li>
+                        <li><strong>建议把「上下文轮数」设为 0。</strong></li>
+                    </ul>
+                    <p>设 0 后，每轮只发：</p>
+                    <pre><code>[system]
+[当前 user：规则 + 【要处理的内容】 + 当前句子]</code></pre>
+                    <p>最干净、最省、格式最稳。</p>
+
+                    <h4>用法 B：追问、指代、连续讨论（建议设轮数 2~8）</h4>
+                    <p>例如：</p>
+                    <ul>
+                        <li>第一轮：<code>翻译：I love learning languages.</code></li>
+                        <li>第二轮：<code>把上面那句话改成疑问句</code></li>
+                    </ul>
+                    <p>第二轮必须知道第一轮内容，才需要 history。</p>
+                    <p>这时把轮数设为 <code>2~4</code> 即可，追完可改回 0。</p>
+                    <p>追问时如果不想带规则，点【纯发送】即可，不用取消勾选。</p>
+
+                    <h3>6.4 轮数达到上限会怎样</h3>
+                    <ul>
+                        <li>工具栏显示如 <code>8 / 8 轮</code>，表示 history 里已攒了 8 轮。</li>
+                        <li>达到上限<strong>不会阻止发送</strong>，继续发送会显示 <code>9 / 8</code>、<code>10 / 8</code>。</li>
+                        <li>发送时始终只取最近 N 轮，旧的会自动被挤掉。</li>
+                        <li>显示超过上限只是提示，不影响功能。</li>
+                        <li>点【清空】会把 history 清空，轮数重置为 0。</li>
+                    </ul>
+
+                    <div class="tip-box">
+                        <p>💡 简单记：<strong>规则不占历史，历史只存原始对话。独立句子设 0，追问才开历史，追问不想带规则就点【纯发送】。</strong></p>
+                    </div>
+
+                    <!-- 七、使用流程 -->
+                    <h2 id="usage">七、使用流程</h2>
+
+                    <h3>7.1 基础使用</h3>
+                    <ol>
+                        <li><strong>启动程序</strong></li>
+                        <li><strong>点击【设置】</strong>，填入 API Key、Base URL、模型，点击「测试连接」确认可用后「保存」</li>
+                        <li><strong>在输入框输入</strong>要翻译或查询的内容，例如：<br><code>Good morning, how are you?</code></li>
+                        <li><strong>按 Ctrl+Enter 或点击【发送】</strong></li>
+                        <li><strong>查看 AI 回复</strong>（流式显示）</li>
+                    </ol>
+
+                    <h3>7.2 使用提示词（快捷填入）</h3>
+                    <ol>
+                        <li>点击【提示词】</li>
+                        <li>选中一条 → 右键 →「使用」</li>
+                        <li>内容自动填入输入框，可补充要翻译的文本</li>
+                        <li>按 <span class="kbd">Ctrl+Enter</span> 发送</li>
+                    </ol>
+
+                    <h3>7.3 使用规则勾选（推荐）</h3>
+                    <p>这是解决“多轮对话格式漂移”的推荐方式。</p>
+                    <ol>
+                        <li>点击【提示词】</li>
+                        <li>把完整提示词存成一条提示词（如果还没有）</li>
+                        <li><strong>单击该条左侧的 <code>☐</code></strong>，变成 <code>☑</code></li>
+                        <li>关闭提示词窗口</li>
+                        <li>在输入框里<strong>只写要处理的原文</strong>，例如：<br><code>ジョージは寝かしつけるのが大好き</code></li>
+                        <li>按 <span class="kbd">Ctrl+Enter</span> 发送</li>
+                        <li>程序自动拼接成：<br><code>规则正文 + 【要处理的内容】 + 原文</code></li>
+                    </ol>
+                    <div class="highlight-box">
+                        <p><strong>为什么这样更稳？</strong></p>
+                        <p>规则每轮都出现在<strong>当前最新消息</strong>里，模型每轮都重新看到完整规则，不依赖它记住第一轮的内容，格式漂移大幅减少。</p>
+                    </div>
+
+                    <h3>7.4 多轮对话与追问</h3>
+                    <ul>
+                        <li>程序自动携带最近 N 轮历史（由「上下文轮数」决定）</li>
+                        <li>历史里保存的是你的<strong>原始输入</strong>，不含勾选规则</li>
+                        <li>可进行追问，例如：
+                            <ul>
+                                <li>第一次：<code>翻译：I love learning languages.</code></li>
+                                <li>第二次：<code>把上面这句话改成疑问句</code></li>
+                            </ul>
+                        </li>
+                        <li><strong>追问时如果不想带规则，点【纯发送】即可</strong>，不用取消勾选</li>
+                        <li>若想开启全新话题，点击【清空】重置历史</li>
+                        <li><strong>每轮独立句子的用法，建议把轮数设为 0</strong>，详见第六章</li>
+                    </ul>
+
+                    <h3>7.5 使用示例</h3>
+                    <p><strong>示例一：翻译与音标</strong></p>
+                    <pre><code>请翻译并标注音标：
+Hello, world!</code></pre>
+
+                    <p><strong>示例二：词义与例句</strong></p>
+                    <pre><code>"ambiguous" 是什么意思？请给例句。</code></pre>
+
+                    <p><strong>示例三：规则勾选 + 日文注音</strong></p>
+                    <p>勾选一条“日语注音格式”规则后，输入框只写：</p>
+                    <pre><code>ジョージは寝かしつけるのが大好き</code></pre>
+                    <p>实际发送：</p>
+                    <pre><code>【回答模板】
+（完整规则正文……）
+
+【要处理的内容】
+ジョージは寝かしつけるのが大好き</code></pre>
+
+                    <p><strong>示例四：追问不带规则</strong></p>
+                    <p>保持规则勾选不变，输入框写：</p>
+                    <pre><code>把上面那句改成疑问句</code></pre>
+                    <p>点【纯发送】，实际发送只有这句追问，不附加规则。</p>
+
+                    <!-- 八、快捷键 -->
+                    <h2 id="shortcuts">八、快捷键</h2>
+                    <table>
+                        <thead>
+                            <tr><th>快捷键</th><th>功能</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><span class="kbd">Ctrl + Enter</span></td><td>在输入框中发送消息（带规则，等同点【发送】）</td></tr>
+                            <tr><td><span class="kbd">Ctrl + Z</span></td><td>撤销输入框编辑</td></tr>
+                            <tr><td><span class="kbd">Ctrl + A</span></td><td>在提示词窗口中全选所有行</td></tr>
+                            <tr><td><span class="kbd">Space</span></td><td>在提示词窗口中批量切换选中行的勾选状态</td></tr>
+                            <tr><td><span class="kbd">Delete</span></td><td>在提示词列表中删除选中项（支持多选）</td></tr>
+                            <tr><td><span class="kbd">双击内容列</span></td><td>在提示词列表中编辑选中项</td></tr>
+                            <tr><td><span class="kbd">单击复选框列</span></td><td>切换该条规则的勾选状态</td></tr>
+                        </tbody>
+                    </table>
+                    <p><strong>【纯发送】目前没有快捷键，只能点按钮。</strong></p>
+
+                    <!-- 九、配置文件说明 -->
+                    <h2 id="config">九、配置文件说明</h2>
+
+                    <h3>9.1 config.json</h3>
+                    <pre><code>{
+  "api_key": "sk-xxxxxxxx",
+  "base_url": "https://api.deepseek.com/v1",
+  "model": "deepseek-flash",
+  "topmost": false,
+  "no_thinking": false,
+  "history_rounds": 0,
+  "win_x": 100,
+  "win_y": 100,
+  "win_w": 760,
+  "win_h": 650
+}</code></pre>
+
+                    <table>
+                        <thead>
+                            <tr><th>字段</th><th>说明</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>api_key</code></td><td>API 密钥</td></tr>
+                            <tr><td><code>base_url</code></td><td>接口地址</td></tr>
+                            <tr><td><code>model</code></td><td>模型名称</td></tr>
+                            <tr><td><code>topmost</code></td><td>是否置顶窗口</td></tr>
+                            <tr><td><code>no_thinking</code></td><td>是否关闭思考模式</td></tr>
+                            <tr><td><code>history_rounds</code></td><td>上下文轮数（独立句子建议 0）</td></tr>
+                            <tr><td><code>win_x</code> / <code>win_y</code></td><td>窗口位置</td></tr>
+                            <tr><td><code>win_w</code> / <code>win_h</code></td><td>窗口大小</td></tr>
+                        </tbody>
+                    </table>
+
+                    <h3>9.2 prompts.json</h3>
+                    <p>见 <a href="#prompts" style="color:#2a5298;">第五章 5.5 节</a>。</p>
+
+                    <h3>9.3 窗口位置记忆</h3>
+                    <ul>
+                        <li>关闭程序时自动保存窗口位置和大小</li>
+                        <li>下次启动时恢复</li>
+                        <li>若位置超出屏幕范围，会自动居中显示</li>
+                    </ul>
+
+                    <!-- 十、发送日志 -->
+                    <h2 id="log">十、发送日志</h2>
+                    <p>程序每次发送消息时，会把<strong>实际发送给 API 的完整内容</strong>追加写入 <code>send_log.txt</code>。</p>
+
+                    <h3>10.1 日志内容</h3>
+                    <p><strong>点【发送】带规则时：</strong></p>
+                    <pre><code>============================================================
+[2025-01-01 12:00:00]
+附加规则数：1
+------------------------------------------------------------
+【回答模板】
+（完整规则正文……）
+
+【要处理的内容】
+ジョージは寝かしつけるのが大好き</code></pre>
+
+                    <p><strong>点【纯发送】不带规则时：</strong></p>
+                    <pre><code>============================================================
+[2025-01-01 12:00:00]
+附加规则数：0
+------------------------------------------------------------
+把上面那句改成疑问句</code></pre>
+
+                    <h3>10.2 用途</h3>
+                    <ul>
+                        <li>确认每轮是否真的附加了规则</li>
+                        <li>确认规则正文是否完整</li>
+                        <li>排查 AI 格式漂移时，核对实际输入</li>
+                        <li>通过“附加规则数”区分带规则发送和纯发送</li>
+                    </ul>
+
+                    <div class="tip-box">
+                        <p>💡 日志文件超过 1MB 会自动清空重写，避免无限增长。</p>
+                    </div>
+
+                    <div class="warn-box">
+                        <p>⚠️ 打包成 exe 后，日志写在 exe 同目录。若 exe 放在系统目录（如 <code>C:\Program Files\</code>），可能因权限不足无法写入。建议把 exe 放在桌面或 D 盘等用户目录。</p>
+                    </div>
+
+                    <!-- 十一、FAQ -->
+                    <h2 id="faq">十一、常见问题（FAQ）</h2>
+
+                    <h4>Q1：点击发送提示"请先在【设置】里填写 API Key 并保存"？</h4>
+                    <p>A：说明尚未配置 API Key。请点击【设置】，填入有效的 API Key 后保存。</p>
+
+                    <h4>Q2：测试连接失败怎么办？</h4>
+                    <p>A：请依次检查：</p>
+                    <ol>
+                        <li>API Key 是否正确、是否过期</li>
+                        <li>Base URL 是否填写正确（注意结尾 <code>/v1</code>）</li>
+                        <li>模型名称是否拼写正确</li>
+                        <li>网络是否通畅（是否需代理）</li>
+                        <li>账户余额是否充足</li>
+                    </ol>
+
+                    <h4>Q3：AI 回复很慢或没有反应？</h4>
+                    <ul>
+                        <li>勾选设置中的「关闭思考（快速模式）」可加速</li>
+                        <li>减小「上下文轮数」可降低 token 消耗</li>
+                        <li>检查网络连接</li>
+                    </ul>
+
+                    <h4>Q4：修改设置后需要重启程序吗？</h4>
+                    <p>A：不需要。点击「保存」后立即生效。</p>
+
+                    <h4>Q5：如何开启新话题，避免历史干扰？</h4>
+                    <p>A：点击工具栏【清空】按钮，即可清空历史与显示内容。</p>
+
+                    <h4>Q6：提示词数据丢失了怎么办？</h4>
+                    <p>A：提示词保存在程序同目录的 <code>prompts.json</code> 中，可提前备份该文件。</p>
+
+                    <h4>Q7：窗口跑到屏幕外看不见了？</h4>
+                    <p>A：程序启动时会检测窗口位置，若超出屏幕范围会自动居中显示。也可手动编辑 <code>config.json</code>，将 <code>win_x</code> 和 <code>win_y</code> 改为 <code>null</code>。</p>
+
+                    <h4>Q8：提示"上下文轮数必须为正整数"？</h4>
+                    <p>A：请在设置中将「上下文轮数」填写为大于或等于 0 的整数（如 <code>0</code> 或 <code>8</code>）。</p>
+
+                    <h4>Q9：勾选了规则，但 AI 还是没按规则输出？</h4>
+                    <p>A：请依次排查：</p>
+                    <ol>
+                        <li>打开 <code>send_log.txt</code>，确认最近一次发送内容里<strong>是否包含完整规则正文</strong>。</li>
+                        <li>如果规则正文在，但 AI 没遵循，说明是模型遵循能力问题。可尝试：
+                            <ul>
+                                <li>换更强的模型（如 <code>deepseek-chat</code>）</li>
+                                <li>精简规则，把最关键条款放最前面</li>
+                                <li>在规则末尾加一句“请严格按照以上格式输出，不要添加额外解释”</li>
+                                <li>点【清空】后重新开始，避免历史错误示例干扰</li>
+                            </ul>
+                        </li>
+                        <li>如果规则正文不在，说明勾选状态没生效，请回提示词窗口确认 <code>☑</code>。</li>
+                    </ol>
+
+                    <h4>Q10：勾选多条规则会怎样？</h4>
+                    <p>A：会按列表顺序依次拼接，每条之间空一行，然后接 <code>【要处理的内容】</code> 和你的输入。建议只勾选必要规则，避免规则互相冲突或过长。</p>
+
+                    <h4>Q11：上下文轮数设为 0，勾选的规则还有效吗？</h4>
+                    <p>A：有效。规则是拼在<strong>当前这条消息</strong>里的，不依赖历史。上下文轮数只影响历史对话的携带，不影响规则附加。</p>
+
+                    <h4>Q12：我每轮都是独立句子，轮数设多少合适？</h4>
+                    <p>A：<strong>建议设 0。</strong></p>
+                    <p>原因：</p>
+                    <ul>
+                        <li>你不需要模型记住上一句。</li>
+                        <li>规则已经拼在当前消息里，不依赖历史。</li>
+                        <li>设 0 可以省 token、避免历史错误格式干扰、格式更稳。</li>
+                    </ul>
+                    <p>如果你偶尔需要追问上一句，临时改成 <code>2~4</code>，追完再改回 <code>0</code>。</p>
+
+                    <h4>Q13：轮数达到 8/8 后还能继续发吗？</h4>
+                    <p>A：能。</p>
+                    <p><code>8/8</code> 只是显示 history 里攒了多少轮，不会阻止发送。继续发送会显示 <code>9/8</code>、<code>10/8</code>，但每次发送时始终只取最近 8 轮，更早的历史会被自动挤掉，不影响功能。</p>
+
+                    <h4>Q14：点【纯发送】和“取消勾选后点【发送】”有什么区别？</h4>
+                    <p>A：效果一样，都是不带规则发送。区别在操作方式：</p>
+                    <ul>
+                        <li><strong>取消勾选 + 【发送】</strong>：需要来回切换勾选状态，适合整段时间都不带规则。</li>
+                        <li><strong>【纯发送】</strong>：保持勾选不变，一键发送不带规则的消息，适合偶尔追问。</li>
+                    </ul>
+                    <p>两者都会：</p>
+                    <ul>
+                        <li>不拼接规则</li>
+                        <li>聊天区不显示规则提示</li>
+                        <li>日志记录“附加规则数：0”</li>
+                        <li>仍然走 history，仍然受上下文轮数影响</li>
+                    </ul>
+
+                    <h4>Q15：支持哪些语言？</h4>
+                    <p>A：取决于所调用的模型能力。常见模型均支持中、英、日、韩、法、德、西等多语言。</p>
+
+                    <h4>Q16：程序可以打包成 exe 吗？</h4>
+                    <p>A：可以。使用 PyInstaller：</p>
+                    <pre><code>pyinstaller -F -w WINAPI.py</code></pre>
+                    <p>打包后 <code>config.json</code>、<code>prompts.json</code>、<code>send_log.txt</code> 会生成在 exe 同目录下。</p>
+
+                    <!-- 十二、注意事项 -->
+                    <h2 id="notes">十二、注意事项</h2>
+                    <div class="warn-box">
+                        <ol>
+                            <li><strong>API 费用</strong>：程序本身免费，但调用 API 会产生费用，请注意账户余额与用量。</li>
+                            <li><strong>隐私保护</strong>：您发送的内容会传输至 API 服务商，请勿输入敏感信息。</li>
+                            <li><strong>网络依赖</strong>：本程序需联网才能使用 AI 功能。</li>
+                            <li><strong>配置安全</strong>：<code>config.json</code> 中明文保存 API Key，请勿分享该文件。</li>
+                            <li><strong>上下文轮数</strong>：
+                                <ul>
+                                    <li>每轮独立句子、规则固定：建议设 <code>0</code>。</li>
+                                    <li>偶尔追问上一句：建议设 <code>2~4</code>。</li>
+                                    <li>连续讨论一个话题：建议设 <code>6~8</code>。</li>
+                                    <li>设置过大可能导致请求超时或费用上升。</li>
+                                </ul>
+                            </li>
+                            <li><strong>规则长度</strong>：勾选的规则过长会占用大量 token，建议精简规则，只保留必要条款。</li>
+                            <li><strong>日志文件</strong>：<code>send_log.txt</code> 会记录你发送的内容，分享日志前请注意脱敏。</li>
+                        </ol>
+                    </div>
+
+                    <!-- 十三、版本与反馈 -->
+                    <h2 id="feedback">十三、版本与反馈</h2>
+                    <ul>
+                        <li><strong>当前版本</strong>：0.1.2</li>
+                        <li><strong>主要更新</strong>：
+                            <ul>
+                                <li>提示词窗口升级为 Treeview，支持复选框勾选</li>
+                                <li>支持多条规则同时勾选，发送时自动拼接</li>
+                                <li>勾选状态持久化到 <code>prompts.json</code></li>
+                                <li>新增发送日志 <code>send_log.txt</code></li>
+                                <li>上下文轮数与规则附加机制分离，规则不占历史</li>
+                                <li>新增第六章「上下文与历史机制」，明确独立句子建议轮数设 0</li>
+                                <li>新增【纯发送】按钮，保持勾选不变即可发送不带规则的消息</li>
+                            </ul>
+                        </li>
+                        <li><strong>反馈建议</strong>：如遇问题或有功能建议，欢迎反馈至开发者。</li>
+                    </ul>
+
+                    <div class="highlight-box" style="text-align:center; margin-top:40px;">
+                        <p style="font-size:1.2rem; font-weight:600; color:#1e3c72;">祝您学习愉快！📚✨</p>
+                    </div>
+                </div>
+
+                <div class="footer">
+                    AI 语言学习助手 · 使用说明书 v0.1.2 &nbsp;|&nbsp; 基于 OpenAI 兼容接口
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <button class="back-to-top" id="backToTop" title="回到顶部">↑</button>
+
+    <script>
+        (function() {
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const navLinks = document.querySelectorAll('.nav-list a');
+            const backToTop = document.getElementById('backToTop');
+
+            toggleBtn.addEventListener('click', function() {
+                sidebar.classList.toggle('collapsed');
+                const collapsed = sidebar.classList.contains('collapsed');
+                toggleBtn.textContent = collapsed ? '▶' : '◀';
+                sidebar.dataset.userCollapsed = collapsed ? '1' : '0';
+            });
+
+            function checkWidth() {
+                if (window.innerWidth < 900) {
+                    sidebar.classList.add('collapsed');
+                    toggleBtn.textContent = '▶';
+                } else {
+                    if (!sidebar.dataset.userCollapsed || sidebar.dataset.userCollapsed === '0') {
+                        sidebar.classList.remove('collapsed');
+                        toggleBtn.textContent = '◀';
+                    }
+                }
+            }
+
+            window.addEventListener('resize', checkWidth);
+            checkWidth();
+
+            const sections = [];
+            navLinks.forEach(link => {
+                const id = link.getAttribute('href').substring(1);
+                const el = document.getElementById(id);
+                if (el) sections.push({ id, el, link });
+            });
+
+            function highlightNav() {
+                let current = sections[0];
+                const scrollPos = window.scrollY + 120;
+                for (const s of sections) {
+                    if (s.el.offsetTop <= scrollPos) {
+                        current = s;
+                    }
+                }
+                navLinks.forEach(l => l.classList.remove('active'));
+                if (current) current.link.classList.add('active');
+            }
+
+            window.addEventListener('scroll', highlightNav);
+            window.addEventListener('load', highlightNav);
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const id = this.getAttribute('href').substring(1);
+                    const target = document.getElementById(id);
+                    if (target) {
+                        const offset = 20;
+                        const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+                        window.scrollTo({ top, behavior: 'smooth' });
+                    }
+                    if (window.innerWidth < 900) {
+                        sidebar.classList.add('collapsed');
+                        toggleBtn.textContent = '▶';
+                        sidebar.dataset.userCollapsed = '1';
+                    }
+                });
+            });
+
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 400) {
+                    backToTop.classList.add('visible');
+                } else {
+                    backToTop.classList.remove('visible');
+                }
+            });
+
+            backToTop.addEventListener('click', function() {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && window.innerWidth < 900) {
+                    sidebar.classList.add('collapsed');
+                    toggleBtn.textContent = '▶';
+                    sidebar.dataset.userCollapsed = '1';
+                }
+            });
+        })();
+    </script>
+</body>
+</html>
